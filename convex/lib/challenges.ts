@@ -1,115 +1,62 @@
-// Challenge pools - placeholder text for now
-// Each board needs 25 unique challenges: 10 easy, 10 medium, 5 hard
-// For 2-4 players, we need at least: 40 easy, 40 medium, 20 hard (supports max 4 players)
+// Challenge Generation System
+// Each challenge = Actor + Action
+// Distribution per board: 18 Easy, 5 Medium, 2 Hard (25 total)
 
-export const challenges = {
-  easy: [
-    "EasyChallenge 1",
-    "EasyChallenge 2",
-    "EasyChallenge 3",
-    "EasyChallenge 4",
-    "EasyChallenge 5",
-    "EasyChallenge 6",
-    "EasyChallenge 7",
-    "EasyChallenge 8",
-    "EasyChallenge 9",
-    "EasyChallenge 10",
-    "EasyChallenge 11",
-    "EasyChallenge 12",
-    "EasyChallenge 13",
-    "EasyChallenge 14",
-    "EasyChallenge 15",
-    "EasyChallenge 16",
-    "EasyChallenge 17",
-    "EasyChallenge 18",
-    "EasyChallenge 19",
-    "EasyChallenge 20",
-    "EasyChallenge 21",
-    "EasyChallenge 22",
-    "EasyChallenge 23",
-    "EasyChallenge 24",
-    "EasyChallenge 25",
-    "EasyChallenge 26",
-    "EasyChallenge 27",
-    "EasyChallenge 28",
-    "EasyChallenge 29",
-    "EasyChallenge 30",
-    "EasyChallenge 31",
-    "EasyChallenge 32",
-    "EasyChallenge 33",
-    "EasyChallenge 34",
-    "EasyChallenge 35",
-    "EasyChallenge 36",
-    "EasyChallenge 37",
-    "EasyChallenge 38",
-    "EasyChallenge 39",
-    "EasyChallenge 40",
-  ],
-  medium: [
-    "MediumChallenge 1",
-    "MediumChallenge 2",
-    "MediumChallenge 3",
-    "MediumChallenge 4",
-    "MediumChallenge 5",
-    "MediumChallenge 6",
-    "MediumChallenge 7",
-    "MediumChallenge 8",
-    "MediumChallenge 9",
-    "MediumChallenge 10",
-    "MediumChallenge 11",
-    "MediumChallenge 12",
-    "MediumChallenge 13",
-    "MediumChallenge 14",
-    "MediumChallenge 15",
-    "MediumChallenge 16",
-    "MediumChallenge 17",
-    "MediumChallenge 18",
-    "MediumChallenge 19",
-    "MediumChallenge 20",
-    "MediumChallenge 21",
-    "MediumChallenge 22",
-    "MediumChallenge 23",
-    "MediumChallenge 24",
-    "MediumChallenge 25",
-    "MediumChallenge 26",
-    "MediumChallenge 27",
-    "MediumChallenge 28",
-    "MediumChallenge 29",
-    "MediumChallenge 30",
-    "MediumChallenge 31",
-    "MediumChallenge 32",
-    "MediumChallenge 33",
-    "MediumChallenge 34",
-    "MediumChallenge 35",
-    "MediumChallenge 36",
-    "MediumChallenge 37",
-    "MediumChallenge 38",
-    "MediumChallenge 39",
-    "MediumChallenge 40",
-  ],
-  hard: [
-    "HardChallenge 1",
-    "HardChallenge 2",
-    "HardChallenge 3",
-    "HardChallenge 4",
-    "HardChallenge 5",
-    "HardChallenge 6",
-    "HardChallenge 7",
-    "HardChallenge 8",
-    "HardChallenge 9",
-    "HardChallenge 10",
-    "HardChallenge 11",
-    "HardChallenge 12",
-    "HardChallenge 13",
-    "HardChallenge 14",
-    "HardChallenge 15",
-    "HardChallenge 16",
-    "HardChallenge 17",
-    "HardChallenge 18",
-    "HardChallenge 19",
-    "HardChallenge 20",
-  ],
-};
+// ============ ACTION POOLS ============
+
+const EASY_ACTIONS = [
+  "scores > 4 points in a turn",
+  "scores > 5 points in a turn",
+  "scores > 6 points in a turn",
+  "scores > 7 points in a turn",
+  "scores > 8 points in a turn",
+  "plays a word ending in a consonant",
+  "plays a word starting with a consonant",
+  "plays a word ending in a vowel",
+  "plays a word starting with a vowel",
+  "uses a Double Letter square",
+  "uses a 1-point tile",
+  "connects a word to exactly 1 existing tile",
+  "plays a word containing 'I'",
+  "plays a word containing 'A'",
+  "plays a word containing 'E'",
+  "plays a word containing 'T'",
+];
+
+const MEDIUM_ACTIONS = [
+  "scores > 12 points in a turn",
+  "adds a prefix or suffix to an existing word",
+  "uses a Triple Letter square",
+  "uses a Double Word square",
+  "uses a 2-point tile",
+  "plays a word touching the board edge",
+  "plays a 2-letter word",
+  "plays a word containing 'S'",
+  "plays a word containing 'C'",
+  "plays a word containing 'L'",
+  "plays a word containing 'U'",
+  "plays a word containing 'O'",
+];
+
+const HARD_ACTIONS = [
+  "scores > 20 points in a turn",
+  "uses a tile worth 4+ points",
+  "connects a word to 2+ existing tiles",
+  "plays a word longer than 6 letters",
+  "plays a word touching a board corner",
+];
+
+// ============ ACTOR DEFINITIONS ============
+
+// Easy actors: "You" or "Anyone"
+const EASY_ACTORS = ["You", "Anyone"];
+
+// Medium actors: "You" or "Any opponent"
+const MEDIUM_ACTORS = ["You", "Any opponent"];
+
+// Hard actors: Specific other player's name (passed in dynamically)
+
+// ============ UTILITIES ============
 
 // Fisher-Yates shuffle
 function shuffle<T>(array: T[]): T[] {
@@ -121,6 +68,13 @@ function shuffle<T>(array: T[]): T[] {
   return result;
 }
 
+// Pick a random element from an array
+function randomPick<T>(array: T[]): T {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+// ============ CHALLENGE GENERATION ============
+
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface Square {
@@ -129,60 +83,112 @@ export interface Square {
   marked: boolean;
 }
 
-// Distribution per board: 10 easy, 10 medium, 5 hard
+// Distribution per board: 18 easy, 5 medium, 2 hard = 25 total
 const DISTRIBUTION: Record<Difficulty, number> = {
-  easy: 10,
-  medium: 10,
-  hard: 5,
+  easy: 18,
+  medium: 5,
+  hard: 2,
 };
 
-export function generateBoardsForPlayers(playerCount: number): Square[][] {
-  // Shuffle each pool
-  const easyPool = shuffle([...challenges.easy]);
-  const mediumPool = shuffle([...challenges.medium]);
-  const hardPool = shuffle([...challenges.hard]);
+/**
+ * Generate a single challenge string
+ */
+function generateChallenge(
+  difficulty: Difficulty,
+  otherPlayerNames: string[]
+): string {
+  let actor: string;
+  let action: string;
 
+  switch (difficulty) {
+    case "easy":
+      actor = randomPick(EASY_ACTORS);
+      action = randomPick(EASY_ACTIONS);
+      break;
+    case "medium":
+      actor = randomPick(MEDIUM_ACTORS);
+      action = randomPick(MEDIUM_ACTIONS);
+      break;
+    case "hard":
+      // Hard challenges target a specific other player
+      if (otherPlayerNames.length > 0) {
+        actor = randomPick(otherPlayerNames);
+      } else {
+        // Fallback if somehow no other players (shouldn't happen with 2+ players)
+        actor = "An opponent";
+      }
+      action = randomPick(HARD_ACTIONS);
+      break;
+  }
+
+  return `${actor} ${action}`;
+}
+
+/**
+ * Generate a set of unique challenges for a single board
+ */
+function generateBoardChallenges(otherPlayerNames: string[]): Square[] {
+  const challenges: Square[] = [];
+  const usedChallenges = new Set<string>();
+
+  // Helper to generate a unique challenge
+  const addUniqueChallenge = (difficulty: Difficulty) => {
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    while (attempts < maxAttempts) {
+      const challenge = generateChallenge(difficulty, otherPlayerNames);
+      if (!usedChallenges.has(challenge)) {
+        usedChallenges.add(challenge);
+        challenges.push({
+          challenge,
+          difficulty,
+          marked: false,
+        });
+        return;
+      }
+      attempts++;
+    }
+
+    // If we can't find a unique one after max attempts, use it anyway
+    // (very unlikely with our action pool sizes)
+    const challenge = generateChallenge(difficulty, otherPlayerNames);
+    challenges.push({
+      challenge,
+      difficulty,
+      marked: false,
+    });
+  };
+
+  // Generate challenges for each difficulty
+  for (let i = 0; i < DISTRIBUTION.easy; i++) {
+    addUniqueChallenge("easy");
+  }
+  for (let i = 0; i < DISTRIBUTION.medium; i++) {
+    addUniqueChallenge("medium");
+  }
+  for (let i = 0; i < DISTRIBUTION.hard; i++) {
+    addUniqueChallenge("hard");
+  }
+
+  return challenges;
+}
+
+/**
+ * Generate boards for all players
+ * @param playerNames - Array of all player names in order
+ * @returns Array of boards, one per player (in same order as playerNames)
+ */
+export function generateBoardsForPlayers(playerNames: string[]): Square[][] {
   const boards: Square[][] = [];
 
-  for (let i = 0; i < playerCount; i++) {
-    // Take unique challenges for this board
-    const boardChallenges: Square[] = [];
+  for (let i = 0; i < playerNames.length; i++) {
+    const currentPlayerName = playerNames[i];
+    // Other players = everyone except current player
+    const otherPlayerNames = playerNames.filter((name) => name !== currentPlayerName);
 
-    // Add easy challenges
-    for (let j = 0; j < DISTRIBUTION.easy; j++) {
-      const challenge = easyPool.pop();
-      if (challenge) {
-        boardChallenges.push({
-          challenge,
-          difficulty: "easy",
-          marked: false,
-        });
-      }
-    }
-
-    // Add medium challenges
-    for (let j = 0; j < DISTRIBUTION.medium; j++) {
-      const challenge = mediumPool.pop();
-      if (challenge) {
-        boardChallenges.push({
-          challenge,
-          difficulty: "medium",
-          marked: false,
-        });
-      }
-    }
-
-    // Add hard challenges
-    for (let j = 0; j < DISTRIBUTION.hard; j++) {
-      const challenge = hardPool.pop();
-      if (challenge) {
-        boardChallenges.push({
-          challenge,
-          difficulty: "hard",
-          marked: false,
-        });
-      }
-    }
+    // Generate challenges for this player's board
+    const boardChallenges = generateBoardChallenges(otherPlayerNames);
 
     // Shuffle the board so challenges are in random positions
     boards.push(shuffle(boardChallenges));
@@ -191,7 +197,8 @@ export function generateBoardsForPlayers(playerCount: number): Square[][] {
   return boards;
 }
 
-// Win detection
+// ============ WIN DETECTION ============
+
 export const WINNING_LINES = [
   // Rows
   [0, 1, 2, 3, 4],

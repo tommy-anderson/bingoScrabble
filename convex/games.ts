@@ -104,10 +104,11 @@ export const start = mutation({
       throw new Error("Maximum 4 players allowed");
     }
 
-    // Generate boards for all players
-    const boardsData = generateBoardsForPlayers(players.length);
+    // Generate boards for all players (pass names for personalized challenges)
+    const playerNames = players.map((p) => p.name);
+    const boardsData = generateBoardsForPlayers(playerNames);
 
-    // Create board records
+    // Create board records (boards are in same order as players)
     for (let i = 0; i < players.length; i++) {
       await ctx.db.insert("boards", {
         playerId: players[i]._id,
