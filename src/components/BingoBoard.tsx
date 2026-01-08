@@ -140,8 +140,8 @@ export function BingoBoard({
       </div>
 
       {/* Bingo Grid - taller rectangles */}
-      <div className="flex items-start justify-center">
-        <div 
+      <div className="flex-1 flex items-start justify-center">
+        <div
           className="grid grid-cols-5 gap-1 sm:gap-1.5 w-full max-w-md"
           style={{ gridAutoRows: "minmax(80px, auto)" }}
         >
@@ -205,7 +205,7 @@ export function BingoBoard({
       )}
 
       {/* Other players' progress */}
-      <div className="mt-3 pt-3 border-t border-border">
+      <div className="mt-auto pt-3 border-t border-border">
         <p className="text-xs text-muted-foreground mb-1">Other players:</p>
         <div className="flex flex-wrap gap-3">
           {otherPlayersProgress.map((p) => (
