@@ -22,7 +22,7 @@ export function GameLobby({ game, players, currentPlayerId }: GameLobbyProps) {
   const [copied, setCopied] = useState(false);
 
   const isHost = game.hostPlayerId === currentPlayerId;
-  const canStart = players.length === 4;
+  const canStart = players.length >= 2 && players.length <= 4;
 
   const handleStart = async () => {
     setIsStarting(true);
@@ -48,8 +48,9 @@ export function GameLobby({ game, players, currentPlayerId }: GameLobbyProps) {
     }
   };
 
-  // Generate player slots (4 total)
-  const playerSlots = Array.from({ length: 4 }, (_, i) => {
+  // Generate player slots (show current players + 1 empty slot, max 4)
+  const slotsToShow = Math.min(Math.max(players.length + 1, 2), 4);
+  const playerSlots = Array.from({ length: slotsToShow }, (_, i) => {
     const player = players[i];
     return player || null;
   });
@@ -75,7 +76,7 @@ export function GameLobby({ game, players, currentPlayerId }: GameLobbyProps) {
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold font-heading mb-1">Waiting Room</h1>
           <p className="text-muted-foreground">
-            {players.length} of 4 players joined
+            {players.length} player{players.length !== 1 ? "s" : ""} joined (2-4 needed)
           </p>
         </div>
 
@@ -155,8 +156,8 @@ export function GameLobby({ game, players, currentPlayerId }: GameLobbyProps) {
             {isStarting
               ? "Starting..."
               : canStart
-                ? "Start Game"
-                : `Need ${4 - players.length} more player${4 - players.length !== 1 ? "s" : ""}`}
+                ? `Start Game (${players.length} players)`
+                : `Need ${2 - players.length} more player${2 - players.length !== 1 ? "s" : ""}`}
           </Button>
         )}
 

@@ -120,7 +120,7 @@ export default function GamePage() {
           <div className="text-center">
             <h1 className="text-2xl font-bold font-heading mb-2">Game is Full</h1>
             <p className="text-muted-foreground mb-4">
-              This game already has 4 players.
+              This game already has the maximum of 4 players.
             </p>
             <button
               onClick={() => router.push("/")}

@@ -97,12 +97,15 @@ export const start = mutation({
       .withIndex("by_game", (q) => q.eq("gameId", args.gameId))
       .collect();
 
-    if (players.length !== 4) {
-      throw new Error("Need exactly 4 players to start");
+    if (players.length < 2) {
+      throw new Error("Need at least 2 players to start");
+    }
+    if (players.length > 4) {
+      throw new Error("Maximum 4 players allowed");
     }
 
     // Generate boards for all players
-    const boardsData = generateBoardsForPlayers(4);
+    const boardsData = generateBoardsForPlayers(players.length);
 
     // Create board records
     for (let i = 0; i < players.length; i++) {

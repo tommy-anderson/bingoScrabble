@@ -1,6 +1,6 @@
 // Challenge pools - placeholder text for now
 // Each board needs 25 unique challenges: 10 easy, 10 medium, 5 hard
-// For 4 players, we need at least: 40 easy, 40 medium, 20 hard
+// For 2-4 players, we need at least: 40 easy, 40 medium, 20 hard (supports max 4 players)
 
 export const challenges = {
   easy: [
