@@ -11,12 +11,8 @@ interface Action {
 
 const EASY_ACTIONS: Action[] = [
   {
-    youForm: "score > 4 points in a turn",
-    theyForm: "scores > 4 points in a turn",
-  },
-  {
-    youForm: "score > 5 points in a turn",
-    theyForm: "scores > 5 points in a turn",
+    youForm: "score > 5 points playing a single letter",
+    theyForm: "scores > 5 points playing a single letter",
   },
   {
     youForm: "score > 6 points in a turn",
@@ -25,10 +21,6 @@ const EASY_ACTIONS: Action[] = [
   {
     youForm: "score > 7 points in a turn",
     theyForm: "scores > 7 points in a turn",
-  },
-  {
-    youForm: "score > 8 points in a turn",
-    theyForm: "scores > 8 points in a turn",
   },
   {
     youForm: "play a consonant ending word ",
@@ -50,10 +42,12 @@ const EASY_ACTIONS: Action[] = [
     youForm: "use a DoubleLetter square",
     theyForm: "uses a DoubleLetter square",
   },
-  { youForm: "use a 1-point tile", theyForm: "uses a 1-point tile" },
+  { youForm: "use a 1-point letter", theyForm: "uses a 1-point letter" },
+  { youForm: "play a 2-letter word", theyForm: "plays a 2-letter word" },
+  { youForm: "play a 3-letter word", theyForm: "plays a 3-letter word" },
   {
-    youForm: "connect a word to an existing tile",
-    theyForm: "connects a word to an existing tile",
+    youForm: "connect a word to two existing tiles",
+    theyForm: "connects a word to two existing tiles",
   },
   {
     youForm: "play a word containing 'I'",
@@ -71,9 +65,29 @@ const EASY_ACTIONS: Action[] = [
     youForm: "play a word containing 'T'",
     theyForm: "plays a word containing 'T'",
   },
+  {
+    youForm: "play a word containing a diacritic",
+    theyForm: "plays a word containing a diacritic",
+  },
+  {
+    youForm: "play a word that is an animal",
+    theyForm: "plays a word that is an animal",
+  },
+  {
+    youForm: "play a word that is a color",
+    theyForm: "plays a word that is a color",
+  },
 ];
 
 const MEDIUM_ACTIONS: Action[] = [
+  {
+    youForm: "use two bonus squares in a turn",
+    theyForm: "uses two bonus squares in a turn",
+  },
+  {
+    youForm: "score exactly 10 points",
+    theyForm: "scores exactly 10 points",
+  },
   {
     youForm: "score > 12 points in a turn",
     theyForm: "scores > 12 points in a turn",
@@ -94,12 +108,12 @@ const MEDIUM_ACTIONS: Action[] = [
     youForm: "use a DoubleWord square",
     theyForm: "uses a DoubleWord square",
   },
-  { youForm: "use a 2-point tile", theyForm: "uses a 2-point tile" },
+  { youForm: "play a 5-letter word", theyForm: "plays a 5-letter word" },
+  { youForm: "use a 2-point letter", theyForm: "uses a 2-point letter" },
   {
     youForm: "play a word touching the board edge",
     theyForm: "plays a word touching the board edge",
   },
-  { youForm: "play a 2-letter word", theyForm: "plays a 2-letter word" },
   {
     youForm: "play a word containing 'S'",
     theyForm: "plays a word containing 'S'",
@@ -128,20 +142,24 @@ const HARD_ACTIONS: Action[] = [
     theyForm: "scores > 20 points in a turn",
   },
   {
-    youForm: "use a tile worth 4+ points",
-    theyForm: "uses a tile worth 4+ points",
+    youForm: "use a letter worth 4+ points",
+    theyForm: "uses a letter worth 4+ points",
   },
   {
-    youForm: "connect a word to 2+ existing tiles",
-    theyForm: "connects a word to 2+ existing tiles",
+    youForm: "connect a word to 3+ existing letters",
+    theyForm: "connects a word to 3+ existing letters",
   },
   {
-    youForm: "play a word longer than 6 letters",
-    theyForm: "plays a word longer than 6 letters",
+    youForm: "play a word 5 letters or longer",
+    theyForm: "plays a word 5 letters or longer",
   },
   {
     youForm: "play a word touching a board corner",
     theyForm: "plays a word touching a board corner",
+  },
+  {
+    youForm: "play a word that is strongly-related to a holiday",
+    theyForm: "plays a word that is strongly-related to a holiday",
   },
 ];
 
