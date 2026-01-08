@@ -12,6 +12,18 @@ export default defineSchema({
     ),
     winnerId: v.optional(v.id("players")),
     createdAt: v.number(),
+    drinkingMode: v.optional(v.boolean()),
+    drinkingEvents: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          playerName: v.string(),
+          drinkType: v.union(v.literal("shot"), v.literal("doubleShot")),
+          sentAt: v.number(),
+          seenBy: v.array(v.string()),
+        })
+      )
+    ),
   }).index("by_code", ["code"]),
 
   players: defineTable({
@@ -44,6 +56,13 @@ export default defineSchema({
           v.literal("opponent3")
         ),
         marked: v.boolean(),
+        drinkingType: v.optional(
+          v.union(
+            v.literal("none"),
+            v.literal("shot"),
+            v.literal("doubleShot")
+          )
+        ),
       })
     ),
   })

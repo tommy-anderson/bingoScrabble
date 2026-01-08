@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "@/hooks/useSession";
-import { Dice5, Users, Sparkles } from "lucide-react";
+import { Dice5, Users, Sparkles, Wine } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -18,6 +18,7 @@ export default function Home() {
   const [mode, setMode] = useState<"home" | "create" | "join">("home");
   const [name, setName] = useState("");
   const [gameCode, setGameCode] = useState("");
+  const [drinkingMode, setDrinkingMode] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,6 +36,7 @@ export default function Home() {
       const result = await createGame({
         hostName: name.trim(),
         sessionId,
+        drinkingMode,
       });
 
       saveSession({
@@ -147,6 +149,43 @@ export default function Home() {
                   autoFocus
                 />
               </div>
+              
+              {/* Drinking Mode Toggle */}
+              <button
+                type="button"
+                onClick={() => setDrinkingMode(!drinkingMode)}
+                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                  drinkingMode
+                    ? "border-amber-500 bg-amber-500/10"
+                    : "border-border hover:border-muted-foreground/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${drinkingMode ? "bg-amber-500/20" : "bg-muted"}`}>
+                    <Wine className={`w-5 h-5 ${drinkingMode ? "text-amber-500" : "text-muted-foreground"}`} />
+                  </div>
+                  <div className="text-left">
+                    <p className={`font-medium ${drinkingMode ? "text-amber-500" : "text-foreground"}`}>
+                      Drinking Mode
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Random squares trigger shots!
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`w-12 h-7 rounded-full transition-colors relative ${
+                    drinkingMode ? "bg-amber-500" : "bg-muted"
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                      drinkingMode ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </div>
+              </button>
+
               {error && <p className="text-destructive text-sm">{error}</p>}
               <div className="flex gap-2">
                 <Button

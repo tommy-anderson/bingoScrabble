@@ -41,19 +41,50 @@ export const markSquare = mutation({
       throw new Error("Game is not in progress");
     }
 
+    // Get the player name for drinking events
+    const player = await ctx.db.get(board.playerId);
+    if (!player) {
+      throw new Error("Player not found");
+    }
+
     // Toggle the square
     const squares = [...board.squares];
     if (args.squareIndex < 0 || args.squareIndex >= squares.length) {
       throw new Error("Invalid square index");
     }
 
+    const square = squares[args.squareIndex];
+    const wasMarked = square.marked;
+    const isNowMarked = !wasMarked;
+
     squares[args.squareIndex] = {
-      ...squares[args.squareIndex],
-      marked: !squares[args.squareIndex].marked,
+      ...square,
+      marked: isNowMarked,
     };
 
     // Update the board
     await ctx.db.patch(args.boardId, { squares });
+
+    // Check for drinking event (only when marking, not unmarking)
+    if (
+      isNowMarked &&
+      game.drinkingMode &&
+      square.drinkingType &&
+      square.drinkingType !== "none"
+    ) {
+      // Add drinking event to the events array
+      const newEvent = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        playerName: player.name,
+        drinkType: square.drinkingType as "shot" | "doubleShot",
+        sentAt: Date.now(),
+        seenBy: [] as string[],
+      };
+
+      await ctx.db.patch(game._id, {
+        drinkingEvents: [...(game.drinkingEvents ?? []), newEvent],
+      });
+    }
 
     // Check for win
     const won = checkWin(squares);

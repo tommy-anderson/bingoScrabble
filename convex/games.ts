@@ -16,6 +16,7 @@ export const create = mutation({
   args: {
     hostName: v.string(),
     sessionId: v.string(),
+    drinkingMode: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Generate a unique game code
@@ -39,6 +40,7 @@ export const create = mutation({
       code,
       status: "lobby",
       createdAt: Date.now(),
+      drinkingMode: args.drinkingMode ?? false,
     });
 
     // Create the host player
@@ -106,7 +108,7 @@ export const start = mutation({
 
     // Generate boards for all players (pass names for personalized challenges)
     const playerNames = players.map((p) => p.name);
-    const boardsData = generateBoardsForPlayers(playerNames);
+    const boardsData = generateBoardsForPlayers(playerNames, game.drinkingMode ?? false);
 
     // Create board records (boards are in same order as players)
     for (let i = 0; i < players.length; i++) {
@@ -136,5 +138,25 @@ export const setWinner = mutation({
       status: "finished",
       winnerId: args.winnerId,
     });
+  },
+});
+
+export const markDrinkingEventSeen = mutation({
+  args: {
+    gameId: v.id("games"),
+    eventId: v.string(),
+    playerId: v.id("players"),
+  },
+  handler: async (ctx, args) => {
+    const game = await ctx.db.get(args.gameId);
+    if (!game || !game.drinkingEvents) return;
+
+    const updatedEvents = game.drinkingEvents.map((event) =>
+      event.id === args.eventId && !event.seenBy.includes(args.playerId)
+        ? { ...event, seenBy: [...event.seenBy, args.playerId] }
+        : event
+    );
+
+    await ctx.db.patch(args.gameId, { drinkingEvents: updatedEvents });
   },
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -9,6 +9,7 @@ import { useSession } from "@/hooks/useSession";
 import { GameLobby } from "@/components/GameLobby";
 import { BingoBoard } from "@/components/BingoBoard";
 import { WinnerModal } from "@/components/WinnerModal";
+import { DrinkingModal } from "@/components/DrinkingModal";
 import { JoinGameForm } from "@/components/JoinGameForm";
 import { Loader2 } from "lucide-react";
 
@@ -19,6 +20,9 @@ export default function GamePage() {
 
   const { session, isLoading: sessionLoading, saveSession, getSessionId } = useSession();
   const [currentPlayerId, setCurrentPlayerId] = useState<Id<"players"> | null>(null);
+
+  // Mutations
+  const markDrinkingEventSeen = useMutation(api.games.markDrinkingEventSeen);
 
   // Queries
   const game = useQuery(api.games.getByCode, { code });
@@ -171,17 +175,48 @@ export default function GamePage() {
     );
   }
 
+  // Find unseen drinking events for current player (oldest first)
+  const unseenDrinkingEvent = useMemo(() => {
+    if (!game?.drinkingEvents || !currentPlayerId) return null;
+
+    const now = Date.now();
+    return game.drinkingEvents.find(
+      (event) =>
+        now > event.sentAt && !event.seenBy.includes(currentPlayerId)
+    ) ?? null;
+  }, [game?.drinkingEvents, currentPlayerId]);
+
+  // Handle dismissing a drinking event
+  const handleDismissDrinkingEvent = async () => {
+    if (unseenDrinkingEvent && currentPlayerId && game) {
+      await markDrinkingEventSeen({
+        gameId: game._id,
+        eventId: unseenDrinkingEvent.id,
+        playerId: currentPlayerId,
+      });
+    }
+  };
+
   // Game in progress - show board
   if (game.status === "playing") {
     return (
-      <BingoBoard
-        board={board}
-        player={currentPlayer}
-        allBoards={allBoards ?? []}
-        players={players ?? []}
-        gameStatus={game.status}
-        currentPlayerId={currentPlayerId}
-      />
+      <>
+        <BingoBoard
+          board={board}
+          player={currentPlayer}
+          allBoards={allBoards ?? []}
+          players={players ?? []}
+          gameStatus={game.status}
+          currentPlayerId={currentPlayerId}
+        />
+        {unseenDrinkingEvent && (
+          <DrinkingModal
+            playerName={unseenDrinkingEvent.playerName}
+            drinkType={unseenDrinkingEvent.drinkType}
+            onDismiss={handleDismissDrinkingEvent}
+          />
+        )}
+      </>
     );
   }
 

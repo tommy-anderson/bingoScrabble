@@ -131,6 +131,11 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "bubble-rise": {
+          "0%": { transform: "translateY(0) scale(1)", opacity: "0.6" },
+          "50%": { opacity: "0.8" },
+          "100%": { transform: "translateY(-100vh) scale(1.5)", opacity: "0" },
+        },
       },
       animation: {
         "mark-bounce": "mark-bounce 300ms ease-out",
@@ -138,6 +143,7 @@ const config: Config = {
         "confetti-fall": "confetti-fall 1s ease-out forwards",
         "trophy-bounce": "trophy-bounce 500ms ease-out infinite",
         "fade-in": "fade-in 200ms ease-out",
+        "bubble-rise": "bubble-rise 2s ease-out infinite",
       },
     },
   },

@@ -183,12 +183,14 @@ export type Actor =
   | "opponent1"
   | "opponent2"
   | "opponent3";
+export type DrinkingType = "none" | "shot" | "doubleShot";
 
 export interface Square {
   challenge: string;
   difficulty: Difficulty;
   actor: Actor;
   marked: boolean;
+  drinkingType?: DrinkingType;
 }
 
 // Distribution per board: 18 easy, 5 medium, 2 hard = 25 total
@@ -307,11 +309,30 @@ function generateBoardChallenges(otherPlayerNames: string[]): Square[] {
 }
 
 /**
+ * Assign drinking squares to a board
+ * 1 double-shot and 2 shots, randomly distributed
+ */
+function assignDrinkingSquares(squares: Square[]): Square[] {
+  // Get random indices for 3 drinking squares
+  const indices = shuffle([...Array(25).keys()]).slice(0, 3);
+  
+  return squares.map((square, index) => {
+    if (index === indices[0]) {
+      return { ...square, drinkingType: "doubleShot" as DrinkingType };
+    } else if (index === indices[1] || index === indices[2]) {
+      return { ...square, drinkingType: "shot" as DrinkingType };
+    }
+    return { ...square, drinkingType: "none" as DrinkingType };
+  });
+}
+
+/**
  * Generate boards for all players
  * @param playerNames - Array of all player names in order
+ * @param drinkingMode - Whether to assign drinking squares
  * @returns Array of boards, one per player (in same order as playerNames)
  */
-export function generateBoardsForPlayers(playerNames: string[]): Square[][] {
+export function generateBoardsForPlayers(playerNames: string[], drinkingMode: boolean = false): Square[][] {
   const boards: Square[][] = [];
 
   for (let i = 0; i < playerNames.length; i++) {
@@ -322,10 +343,23 @@ export function generateBoardsForPlayers(playerNames: string[]): Square[][] {
     );
 
     // Generate challenges for this player's board
-    const boardChallenges = generateBoardChallenges(otherPlayerNames);
+    let boardChallenges = generateBoardChallenges(otherPlayerNames);
 
     // Shuffle the board so challenges are in random positions
-    boards.push(shuffle(boardChallenges));
+    boardChallenges = shuffle(boardChallenges);
+
+    // Assign drinking squares if drinking mode is enabled
+    if (drinkingMode) {
+      boardChallenges = assignDrinkingSquares(boardChallenges);
+    } else {
+      // Add drinkingType: "none" to all squares for consistency
+      boardChallenges = boardChallenges.map((square) => ({
+        ...square,
+        drinkingType: "none" as DrinkingType,
+      }));
+    }
+
+    boards.push(boardChallenges);
   }
 
   return boards;
