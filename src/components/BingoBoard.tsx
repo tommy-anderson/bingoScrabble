@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
 import { BingoSquare } from "./BingoSquare";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Check, X } from "lucide-react";
 
 // All possible winning lines (same as server-side)
 const WINNING_LINES = [
@@ -53,14 +56,21 @@ export function BingoBoard({
   currentPlayerId,
 }: BingoBoardProps) {
   const markSquare = useMutation(api.boards.markSquare);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const handleSquareClick = async (index: number) => {
+  const handleSquareClick = (index: number) => {
     if (!board || gameStatus !== "playing") return;
+    // Toggle selection - tap same square to deselect
+    setSelectedIndex(selectedIndex === index ? null : index);
+  };
+
+  const handleMarkSquare = async () => {
+    if (!board || selectedIndex === null || gameStatus !== "playing") return;
 
     try {
       await markSquare({
         boardId: board._id,
-        squareIndex: index,
+        squareIndex: selectedIndex,
       });
 
       // Haptic feedback if supported
@@ -88,6 +98,9 @@ export function BingoBoard({
       };
     });
 
+  // Get selected square data
+  const selectedSquare = selectedIndex !== null ? board?.squares[selectedIndex] : null;
+
   if (!board) {
     return (
       <main className="min-h-screen flex items-center justify-center p-4">
@@ -99,7 +112,7 @@ export function BingoBoard({
   return (
     <main className="min-h-screen flex flex-col p-2 sm:p-4 safe-area-top safe-area-bottom">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div>
           <h1 className="text-lg font-bold font-heading text-primary">
             {player?.name}&apos;s Board
@@ -126,15 +139,19 @@ export function BingoBoard({
         </div>
       </div>
 
-      {/* Bingo Grid */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="grid grid-cols-5 gap-1 sm:gap-2 w-full max-w-md aspect-square">
+      {/* Bingo Grid - taller rectangles */}
+      <div className="flex items-start justify-center">
+        <div 
+          className="grid grid-cols-5 gap-1 sm:gap-1.5 w-full max-w-md"
+          style={{ gridAutoRows: "minmax(80px, auto)" }}
+        >
           {board.squares.map((square, index) => (
             <BingoSquare
               key={index}
               challenge={square.challenge}
               difficulty={square.difficulty}
               marked={square.marked}
+              selected={selectedIndex === index}
               onClick={() => handleSquareClick(index)}
               disabled={gameStatus !== "playing"}
             />
@@ -142,9 +159,54 @@ export function BingoBoard({
         </div>
       </div>
 
+      {/* Detail Panel - shows when a square is selected */}
+      {selectedSquare ? (
+        <div
+          className={cn(
+            "mt-2 p-4 rounded-xl border-2 animate-fade-in",
+            selectedSquare.difficulty === "easy" && "bg-emerald-950/30 border-emerald-700",
+            selectedSquare.difficulty === "medium" && "bg-amber-950/30 border-amber-700",
+            selectedSquare.difficulty === "hard" && "bg-red-950/30 border-red-700"
+          )}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground mb-1 capitalize">
+                {selectedSquare.difficulty} Challenge
+              </p>
+              <p className="text-base font-medium">{selectedSquare.challenge}</p>
+            </div>
+            <Button
+              size="sm"
+              variant={selectedSquare.marked ? "outline" : "default"}
+              onClick={handleMarkSquare}
+              className="shrink-0"
+            >
+              {selectedSquare.marked ? (
+                <>
+                  <X className="w-4 h-4 mr-1" />
+                  Unmark
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Mark Done
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2 p-4 rounded-xl border border-dashed border-muted text-center">
+          <p className="text-sm text-muted-foreground">
+            Tap a square to see the full challenge
+          </p>
+        </div>
+      )}
+
       {/* Other players' progress */}
-      <div className="mt-4 pt-4 border-t border-border">
-        <p className="text-xs text-muted-foreground mb-2">Other players:</p>
+      <div className="mt-3 pt-3 border-t border-border">
+        <p className="text-xs text-muted-foreground mb-1">Other players:</p>
         <div className="flex flex-wrap gap-3">
           {otherPlayersProgress.map((p) => (
             <div key={p.name} className="flex items-center gap-2">
@@ -164,22 +226,6 @@ export function BingoBoard({
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="mt-4 flex justify-center gap-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>Easy</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-amber-400" />
-          <span>Medium</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-red-400" />
-          <span>Hard</span>
         </div>
       </div>
     </main>

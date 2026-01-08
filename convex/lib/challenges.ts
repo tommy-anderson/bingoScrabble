@@ -3,47 +3,143 @@
 // Distribution per board: 18 Easy, 5 Medium, 2 Hard (25 total)
 
 // ============ ACTION POOLS ============
+// Each action has two forms: second person (you) and third person (others)
 
-const EASY_ACTIONS = [
-  "scores > 4 points in a turn",
-  "scores > 5 points in a turn",
-  "scores > 6 points in a turn",
-  "scores > 7 points in a turn",
-  "scores > 8 points in a turn",
-  "plays a word ending in a consonant",
-  "plays a word starting with a consonant",
-  "plays a word ending in a vowel",
-  "plays a word starting with a vowel",
-  "uses a Double Letter square",
-  "uses a 1-point tile",
-  "connects a word to exactly 1 existing tile",
-  "plays a word containing 'I'",
-  "plays a word containing 'A'",
-  "plays a word containing 'E'",
-  "plays a word containing 'T'",
+interface Action {
+  youForm: string; // "score > 4 points in a turn"
+  theyForm: string; // "scores > 4 points in a turn"
+}
+
+const EASY_ACTIONS: Action[] = [
+  {
+    youForm: "score > 4 points in a turn",
+    theyForm: "scores > 4 points in a turn",
+  },
+  {
+    youForm: "score > 5 points in a turn",
+    theyForm: "scores > 5 points in a turn",
+  },
+  {
+    youForm: "score > 6 points in a turn",
+    theyForm: "scores > 6 points in a turn",
+  },
+  {
+    youForm: "score > 7 points in a turn",
+    theyForm: "scores > 7 points in a turn",
+  },
+  {
+    youForm: "score > 8 points in a turn",
+    theyForm: "scores > 8 points in a turn",
+  },
+  {
+    youForm: "play a word ending in a consonant",
+    theyForm: "plays a word ending in a consonant",
+  },
+  {
+    youForm: "play a word starting with a consonant",
+    theyForm: "plays a word starting with a consonant",
+  },
+  {
+    youForm: "play a word ending in a vowel",
+    theyForm: "plays a word ending in a vowel",
+  },
+  {
+    youForm: "play a word starting with a vowel",
+    theyForm: "plays a word starting with a vowel",
+  },
+  {
+    youForm: "use a Double Letter square",
+    theyForm: "uses a Double Letter square",
+  },
+  { youForm: "use a 1-point tile", theyForm: "uses a 1-point tile" },
+  {
+    youForm: "connect a word to exactly 1 existing tile",
+    theyForm: "connects a word to exactly 1 existing tile",
+  },
+  {
+    youForm: "play a word containing 'I'",
+    theyForm: "plays a word containing 'I'",
+  },
+  {
+    youForm: "play a word containing 'A'",
+    theyForm: "plays a word containing 'A'",
+  },
+  {
+    youForm: "play a word containing 'E'",
+    theyForm: "plays a word containing 'E'",
+  },
+  {
+    youForm: "play a word containing 'T'",
+    theyForm: "plays a word containing 'T'",
+  },
 ];
 
-const MEDIUM_ACTIONS = [
-  "scores > 12 points in a turn",
-  "adds a prefix or suffix to an existing word",
-  "uses a Triple Letter square",
-  "uses a Double Word square",
-  "uses a 2-point tile",
-  "plays a word touching the board edge",
-  "plays a 2-letter word",
-  "plays a word containing 'S'",
-  "plays a word containing 'C'",
-  "plays a word containing 'L'",
-  "plays a word containing 'U'",
-  "plays a word containing 'O'",
+const MEDIUM_ACTIONS: Action[] = [
+  {
+    youForm: "score > 12 points in a turn",
+    theyForm: "scores > 12 points in a turn",
+  },
+  {
+    youForm: "add a prefix or suffix to an existing word",
+    theyForm: "adds a prefix or suffix to an existing word",
+  },
+  {
+    youForm: "use a Triple Letter square",
+    theyForm: "uses a Triple Letter square",
+  },
+  {
+    youForm: "use a Double Word square",
+    theyForm: "uses a Double Word square",
+  },
+  { youForm: "use a 2-point tile", theyForm: "uses a 2-point tile" },
+  {
+    youForm: "play a word touching the board edge",
+    theyForm: "plays a word touching the board edge",
+  },
+  { youForm: "play a 2-letter word", theyForm: "plays a 2-letter word" },
+  {
+    youForm: "play a word containing 'S'",
+    theyForm: "plays a word containing 'S'",
+  },
+  {
+    youForm: "play a word containing 'C'",
+    theyForm: "plays a word containing 'C'",
+  },
+  {
+    youForm: "play a word containing 'L'",
+    theyForm: "plays a word containing 'L'",
+  },
+  {
+    youForm: "play a word containing 'U'",
+    theyForm: "plays a word containing 'U'",
+  },
+  {
+    youForm: "play a word containing 'O'",
+    theyForm: "plays a word containing 'O'",
+  },
 ];
 
-const HARD_ACTIONS = [
-  "scores > 20 points in a turn",
-  "uses a tile worth 4+ points",
-  "connects a word to 2+ existing tiles",
-  "plays a word longer than 6 letters",
-  "plays a word touching a board corner",
+const HARD_ACTIONS: Action[] = [
+  {
+    youForm: "score > 20 points in a turn",
+    theyForm: "scores > 20 points in a turn",
+  },
+  {
+    youForm: "use a tile worth 4+ points",
+    theyForm: "uses a tile worth 4+ points",
+  },
+  {
+    youForm: "connect a word to 2+ existing tiles",
+    theyForm: "connects a word to 2+ existing tiles",
+  },
+  {
+    youForm: "play a word longer than 6 letters",
+    theyForm: "plays a word longer than 6 letters",
+  },
+  {
+    youForm: "play a word touching a board corner",
+    theyForm: "plays a word touching a board corner",
+  },
 ];
 
 // ============ ACTOR DEFINITIONS ============
@@ -91,23 +187,26 @@ const DISTRIBUTION: Record<Difficulty, number> = {
 };
 
 /**
- * Generate a single challenge string
+ * Generate a single challenge string with proper verb conjugation
  */
 function generateChallenge(
   difficulty: Difficulty,
   otherPlayerNames: string[]
 ): string {
   let actor: string;
-  let action: string;
+  let action: Action;
+  let isYou: boolean;
 
   switch (difficulty) {
     case "easy":
       actor = randomPick(EASY_ACTORS);
       action = randomPick(EASY_ACTIONS);
+      isYou = actor === "You";
       break;
     case "medium":
       actor = randomPick(MEDIUM_ACTORS);
       action = randomPick(MEDIUM_ACTIONS);
+      isYou = actor === "You";
       break;
     case "hard":
       // Hard challenges target a specific other player
@@ -118,10 +217,13 @@ function generateChallenge(
         actor = "An opponent";
       }
       action = randomPick(HARD_ACTIONS);
+      isYou = false; // Hard challenges are always about other players
       break;
   }
 
-  return `${actor} ${action}`;
+  // Use correct verb form based on actor
+  const actionText = isYou ? action.youForm : action.theyForm;
+  return `${actor} ${actionText}`;
 }
 
 /**
@@ -185,7 +287,9 @@ export function generateBoardsForPlayers(playerNames: string[]): Square[][] {
   for (let i = 0; i < playerNames.length; i++) {
     const currentPlayerName = playerNames[i];
     // Other players = everyone except current player
-    const otherPlayerNames = playerNames.filter((name) => name !== currentPlayerName);
+    const otherPlayerNames = playerNames.filter(
+      (name) => name !== currentPlayerName
+    );
 
     // Generate challenges for this player's board
     const boardChallenges = generateBoardChallenges(otherPlayerNames);
@@ -218,5 +322,7 @@ export const WINNING_LINES = [
 ];
 
 export function checkWin(squares: { marked: boolean }[]): boolean {
-  return WINNING_LINES.some((line) => line.every((index) => squares[index]?.marked));
+  return WINNING_LINES.some((line) =>
+    line.every((index) => squares[index]?.marked)
+  );
 }

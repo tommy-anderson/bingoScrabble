@@ -7,6 +7,7 @@ interface BingoSquareProps {
   challenge: string;
   difficulty: "easy" | "medium" | "hard";
   marked: boolean;
+  selected?: boolean;
   onClick: () => void;
   disabled?: boolean;
 }
@@ -23,10 +24,17 @@ const difficultyMarkedStyles = {
   hard: "bg-red-800 border-red-500",
 };
 
+const difficultySelectedStyles = {
+  easy: "ring-2 ring-emerald-400 ring-offset-2 ring-offset-background",
+  medium: "ring-2 ring-amber-400 ring-offset-2 ring-offset-background",
+  hard: "ring-2 ring-red-400 ring-offset-2 ring-offset-background",
+};
+
 export function BingoSquare({
   challenge,
   difficulty,
   marked,
+  selected = false,
   onClick,
   disabled = false,
 }: BingoSquareProps) {
@@ -35,11 +43,12 @@ export function BingoSquare({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative aspect-square p-1 rounded-lg border-2 transition-all duration-150",
+        "relative min-h-[80px] w-full p-1.5 rounded-lg border-2 transition-all duration-150",
         "flex flex-col items-center justify-center text-center",
         "active:scale-95 select-none touch-manipulation",
         marked ? difficultyMarkedStyles[difficulty] : difficultyStyles[difficulty],
         marked && "animate-mark-bounce",
+        selected && difficultySelectedStyles[difficulty],
         disabled && "opacity-50 cursor-not-allowed"
       )}
     >
@@ -47,7 +56,7 @@ export function BingoSquare({
       <span
         className={cn(
           "text-[10px] xs:text-xs sm:text-sm font-medium leading-tight",
-          "line-clamp-3 px-0.5",
+          "line-clamp-4 px-0.5",
           marked ? "text-white/80" : "text-foreground"
         )}
       >
