@@ -1,6 +1,5 @@
 // Challenge Generation System
 // Each challenge = Actor + Action
-// Distribution per board: 18 Easy, 5 Medium, 2 Hard (25 total)
 
 // ============ ACTION POOLS ============
 // Each action has two forms: second person (you) and third person (others)
@@ -154,7 +153,8 @@ const EASY_ACTORS = ["You", "Anyone"];
 // Medium actors: "You" or "Any opponent"
 const MEDIUM_ACTORS = ["You", "Any opponent"];
 
-// Hard actors: Specific other player's name (passed in dynamically)
+// Hard actors: "You" or specific other player's name
+const HARD_ACTORS = ["You", "Opponent"];
 
 // ============ UTILITIES ============
 
@@ -193,11 +193,11 @@ export interface Square {
   drinkingType?: DrinkingType;
 }
 
-// Distribution per board: 18 easy, 5 medium, 2 hard = 25 total
+// Distribution per board, must total 25
 const DISTRIBUTION: Record<Difficulty, number> = {
-  easy: 18,
-  medium: 5,
-  hard: 2,
+  easy: 13,
+  medium: 8,
+  hard: 4,
 };
 
 interface ChallengeResult {
@@ -228,18 +228,22 @@ function generateChallenge(
       isYou = actor === "you";
       break;
     case "hard":
-      // Hard challenges target a specific other player by index
-      if (otherPlayerNames.length > 0) {
+      // Hard challenges can be "you" or a specific other player
+      if (randomPick(HARD_ACTORS) === "You") {
+        actor = "you";
+        isYou = true;
+      } else if (otherPlayerNames.length > 0) {
         const opponentIndex = Math.floor(
           Math.random() * Math.min(otherPlayerNames.length, 3)
         );
         actor = `opponent${opponentIndex + 1}` as Actor;
+        isYou = false;
       } else {
         // Fallback if somehow no other players
         actor = "anyOpponent";
+        isYou = false;
       }
       action = randomPick(HARD_ACTIONS);
-      isYou = false; // Hard challenges are always about other players
       break;
   }
 
@@ -315,7 +319,7 @@ function generateBoardChallenges(otherPlayerNames: string[]): Square[] {
 function assignDrinkingSquares(squares: Square[]): Square[] {
   // Get random indices for 3 drinking squares
   const indices = shuffle([...Array(25).keys()]).slice(0, 3);
-  
+
   return squares.map((square, index) => {
     if (index === indices[0]) {
       return { ...square, drinkingType: "doubleShot" as DrinkingType };
@@ -332,7 +336,10 @@ function assignDrinkingSquares(squares: Square[]): Square[] {
  * @param drinkingMode - Whether to assign drinking squares
  * @returns Array of boards, one per player (in same order as playerNames)
  */
-export function generateBoardsForPlayers(playerNames: string[], drinkingMode: boolean = false): Square[][] {
+export function generateBoardsForPlayers(
+  playerNames: string[],
+  drinkingMode: boolean = false
+): Square[][] {
   const boards: Square[][] = [];
 
   for (let i = 0; i < playerNames.length; i++) {
