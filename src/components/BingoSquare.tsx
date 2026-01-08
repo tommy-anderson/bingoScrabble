@@ -1,34 +1,23 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import {
+  Difficulty,
+  difficultyStyles,
+  difficultyMarkedStyles,
+  difficultySelectedStyles,
+  difficultyDotColors,
+} from "@/lib/gameUtils";
 import { Check } from "lucide-react";
 
 interface BingoSquareProps {
   challenge: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: Difficulty;
   marked: boolean;
   selected?: boolean;
   onClick: () => void;
   disabled?: boolean;
 }
-
-const difficultyStyles = {
-  easy: "bg-emerald-950/50 border-emerald-800 hover:border-emerald-600",
-  medium: "bg-amber-950/50 border-amber-800 hover:border-amber-600",
-  hard: "bg-red-950/50 border-red-800 hover:border-red-600",
-};
-
-const difficultyMarkedStyles = {
-  easy: "bg-emerald-800 border-emerald-500",
-  medium: "bg-amber-800 border-amber-500",
-  hard: "bg-red-800 border-red-500",
-};
-
-const difficultySelectedStyles = {
-  easy: "ring-2 ring-emerald-400 ring-offset-2 ring-offset-background",
-  medium: "ring-2 ring-amber-400 ring-offset-2 ring-offset-background",
-  hard: "ring-2 ring-red-400 ring-offset-2 ring-offset-background",
-};
 
 export function BingoSquare({
   challenge,
@@ -76,9 +65,7 @@ export function BingoSquare({
       <div
         className={cn(
           "absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full",
-          difficulty === "easy" && "bg-emerald-400",
-          difficulty === "medium" && "bg-amber-400",
-          difficulty === "hard" && "bg-red-400"
+          difficultyDotColors[difficulty]
         )}
       />
     </button>

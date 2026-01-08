@@ -6,7 +6,8 @@ import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Crown, Check, Clock, Copy, CheckCheck } from "lucide-react";
+import { PlayerSlot } from "./PlayerSlot";
+import { Copy, CheckCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface GameLobbyProps {
@@ -50,10 +51,7 @@ export function GameLobby({ game, players, currentPlayerId }: GameLobbyProps) {
 
   // Generate player slots (show current players + 1 empty slot, max 4)
   const slotsToShow = Math.min(Math.max(players.length + 1, 2), 4);
-  const playerSlots = Array.from({ length: slotsToShow }, (_, i) => {
-    const player = players[i];
-    return player || null;
-  });
+  const playerSlots = Array.from({ length: slotsToShow }, (_, i) => players[i] ?? null);
 
   return (
     <main className="min-h-screen flex flex-col p-4 safe-area-top safe-area-bottom">
@@ -87,40 +85,11 @@ export function GameLobby({ game, players, currentPlayerId }: GameLobbyProps) {
           </CardHeader>
           <CardContent className="space-y-2">
             {playerSlots.map((player, index) => (
-              <div
+              <PlayerSlot
                 key={player?._id ?? `empty-${index}`}
-                className={`flex items-center justify-between p-3 rounded-lg border ${
-                  player
-                    ? "bg-card border-border"
-                    : "bg-muted/30 border-dashed border-muted"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {player ? (
-                    <>
-                      {player.isHost && (
-                        <Crown className="w-4 h-4 text-accent" />
-                      )}
-                      <span
-                        className={
-                          player._id === currentPlayerId
-                            ? "text-primary font-medium"
-                            : ""
-                        }
-                      >
-                        {player.name}
-                        {player._id === currentPlayerId && " (you)"}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Waiting...
-                    </span>
-                  )}
-                </div>
-                {player && <Check className="w-4 h-4 text-success" />}
-              </div>
+                player={player}
+                currentPlayerId={currentPlayerId}
+              />
             ))}
           </CardContent>
         </Card>
