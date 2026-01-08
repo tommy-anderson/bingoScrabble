@@ -66,3 +66,70 @@ export const difficultyDotColors: Record<Difficulty, string> = {
   medium: "bg-amber-400",
   hard: "bg-red-400",
 };
+
+// Actor types
+export type Actor = "you" | "anyone" | "anyOpponent" | "opponent1" | "opponent2" | "opponent3";
+
+// Actor emoji mappings
+export const actorEmojis: Record<Actor, string> = {
+  you: "🫵",
+  anyone: "🌎",
+  anyOpponent: "⚔️",
+  opponent1: "1️⃣",
+  opponent2: "2️⃣",
+  opponent3: "3️⃣",
+};
+
+// Check if an actor is a targeted opponent
+export function isTargetedOpponent(actor: Actor): boolean {
+  return actor === "opponent1" || actor === "opponent2" || actor === "opponent3";
+}
+
+// Get opponent index from actor (0-based)
+export function getOpponentIndex(actor: Actor): number | null {
+  if (actor === "opponent1") return 0;
+  if (actor === "opponent2") return 1;
+  if (actor === "opponent3") return 2;
+  return null;
+}
+
+// Infer actor from old challenge text format (backward compatibility)
+export function inferActorFromChallenge(challenge: string, otherPlayerNames: string[] = []): Actor {
+  const lowerChallenge = challenge.toLowerCase();
+  
+  // Check for specific player names first (hard challenges)
+  for (let i = 0; i < Math.min(otherPlayerNames.length, 3); i++) {
+    if (lowerChallenge.startsWith(otherPlayerNames[i].toLowerCase() + " ")) {
+      return `opponent${i + 1}` as Actor;
+    }
+  }
+  
+  if (lowerChallenge.startsWith("you ")) return "you";
+  if (lowerChallenge.startsWith("anyone ")) return "anyone";
+  if (lowerChallenge.startsWith("any opponent ")) return "anyOpponent";
+  
+  // Default fallback
+  return "you";
+}
+
+// Strip actor prefix from old challenge text format (backward compatibility)
+export function stripActorFromChallenge(challenge: string, otherPlayerNames: string[] = []): string {
+  // Check for specific player names first
+  for (const name of otherPlayerNames) {
+    if (challenge.toLowerCase().startsWith(name.toLowerCase() + " ")) {
+      const stripped = challenge.slice(name.length + 1);
+      return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+    }
+  }
+  
+  // Check for known actor prefixes
+  const prefixes = ["You ", "Anyone ", "Any opponent "];
+  for (const prefix of prefixes) {
+    if (challenge.startsWith(prefix)) {
+      const stripped = challenge.slice(prefix.length);
+      return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+    }
+  }
+  
+  return challenge;
+}

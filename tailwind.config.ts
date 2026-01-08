@@ -102,6 +102,7 @@ const config: Config = {
       fontFamily: {
         heading: ["Fredoka", "Comic Neue", "system-ui", "sans-serif"],
         body: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        condensed: ["Barlow Condensed", "Arial Narrow", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       keyframes: {

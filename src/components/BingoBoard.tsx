@@ -7,7 +7,14 @@ import { Doc, Id } from "../../convex/_generated/dataModel";
 import { BingoSquare } from "./BingoSquare";
 import { ProgressDots } from "./ProgressDots";
 import { ChallengeDetailPanel } from "./ChallengeDetailPanel";
-import { getBestLineProgress, Difficulty } from "@/lib/gameUtils";
+import {
+  getBestLineProgress,
+  Difficulty,
+  Actor,
+  actorEmojis,
+  inferActorFromChallenge,
+  stripActorFromChallenge
+} from "@/lib/gameUtils";
 
 interface BingoBoardProps {
   board: Doc<"boards"> | null | undefined;
@@ -99,13 +106,14 @@ export function BingoBoard({
       <div className="flex-1 flex items-start justify-center">
         <div
           className="grid grid-cols-5 gap-1 sm:gap-1.5 w-full max-w-md"
-          style={{ gridAutoRows: "minmax(95px, auto)" }}
+          style={{ gridAutoRows: "minmax(115px, auto)" }}
         >
           {board.squares.map((square, index) => (
             <BingoSquare
               key={index}
               challenge={square.challenge}
               difficulty={square.difficulty}
+              actor={square.actor as Actor}
               marked={square.marked}
               selected={selectedIndex === index}
               onClick={() => handleSquareClick(index)}
@@ -119,6 +127,7 @@ export function BingoBoard({
       <ChallengeDetailPanel
         challenge={selectedSquare?.challenge ?? null}
         difficulty={(selectedSquare?.difficulty as Difficulty) ?? null}
+        actor={(selectedSquare?.actor as Actor) ?? null}
         marked={selectedSquare?.marked ?? false}
         onToggleMark={handleMarkSquare}
         disabled={gameStatus !== "playing"}
@@ -128,9 +137,11 @@ export function BingoBoard({
       <div className="mt-auto pt-3 border-t border-border">
         <p className="text-xs text-muted-foreground mb-1">Other players:</p>
         <div className="flex flex-wrap gap-3">
-          {otherPlayersProgress.map((p) => (
+          {otherPlayersProgress.map((p, index) => (
             <div key={p.name} className="flex items-center gap-2">
-              <span className="text-sm">{p.name}</span>
+              <span className="text-sm">
+                {actorEmojis[`opponent${index + 1}` as Actor]} {p.name}
+              </span>
               <ProgressDots progress={p.progress} filledClass="bg-accent" />
             </div>
           ))}

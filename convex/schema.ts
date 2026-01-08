@@ -35,6 +35,14 @@ export default defineSchema({
           v.literal("medium"),
           v.literal("hard")
         ),
+        actor: v.union(
+          v.literal("you"),
+          v.literal("anyone"),
+          v.literal("anyOpponent"),
+          v.literal("opponent1"),
+          v.literal("opponent2"),
+          v.literal("opponent3")
+        ),
         marked: v.boolean(),
       })
     ),

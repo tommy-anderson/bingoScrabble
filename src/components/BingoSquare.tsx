@@ -3,16 +3,18 @@
 import { cn } from "@/lib/utils";
 import {
   Difficulty,
+  Actor,
   difficultyStyles,
   difficultyMarkedStyles,
   difficultySelectedStyles,
-  difficultyDotColors,
+  actorEmojis,
 } from "@/lib/gameUtils";
 import { Check } from "lucide-react";
 
 interface BingoSquareProps {
   challenge: string;
   difficulty: Difficulty;
+  actor: Actor;
   marked: boolean;
   selected?: boolean;
   onClick: () => void;
@@ -22,6 +24,7 @@ interface BingoSquareProps {
 export function BingoSquare({
   challenge,
   difficulty,
+  actor,
   marked,
   selected = false,
   onClick,
@@ -44,7 +47,7 @@ export function BingoSquare({
       {/* Challenge text */}
       <span
         className={cn(
-          "text-[10px] xs:text-xs sm:text-sm font-medium leading-tight",
+          "font-condensed text-xs sm:text-sm font-medium leading-tight",
           "line-clamp-4 px-0.5",
           marked ? "text-white/80" : "text-foreground"
         )}
@@ -61,13 +64,15 @@ export function BingoSquare({
         </div>
       )}
 
-      {/* Difficulty indicator dot */}
-      <div
+      {/* Actor indicator emoji */}
+      <span
         className={cn(
-          "absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full",
-          difficultyDotColors[difficulty]
+          "absolute bottom-0 right-0.5 text-xs leading-none",
+          marked && "opacity-60"
         )}
-      />
+      >
+        {actorEmojis[actor]}
+      </span>
     </button>
   );
 }

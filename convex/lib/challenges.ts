@@ -32,29 +32,29 @@ const EASY_ACTIONS: Action[] = [
     theyForm: "scores > 8 points in a turn",
   },
   {
-    youForm: "play a word ending in a consonant",
-    theyForm: "plays a word ending in a consonant",
+    youForm: "play a consonant ending word ",
+    theyForm: "plays a consonant ending word ",
   },
   {
-    youForm: "play a word starting with a consonant",
-    theyForm: "plays a word starting with a consonant",
+    youForm: "play a consonant starting word",
+    theyForm: "plays a consonant starting word",
   },
   {
-    youForm: "play a word ending in a vowel",
-    theyForm: "plays a word ending in a vowel",
+    youForm: "play a vowel ending word",
+    theyForm: "plays a vowel ending word",
   },
   {
-    youForm: "play a word starting with a vowel",
-    theyForm: "plays a word starting with a vowel",
+    youForm: "play a vowel starting word",
+    theyForm: "plays a vowel starting word",
   },
   {
-    youForm: "use a Double Letter square",
-    theyForm: "uses a Double Letter square",
+    youForm: "use a DoubleLetter square",
+    theyForm: "uses a DoubleLetter square",
   },
   { youForm: "use a 1-point tile", theyForm: "uses a 1-point tile" },
   {
-    youForm: "connect a word to exactly 1 existing tile",
-    theyForm: "connects a word to exactly 1 existing tile",
+    youForm: "connect a word to an existing tile",
+    theyForm: "connects a word to an existing tile",
   },
   {
     youForm: "play a word containing 'I'",
@@ -80,16 +80,20 @@ const MEDIUM_ACTIONS: Action[] = [
     theyForm: "scores > 12 points in a turn",
   },
   {
-    youForm: "add a prefix or suffix to an existing word",
-    theyForm: "adds a prefix or suffix to an existing word",
+    youForm: "add a prefix to an existing word",
+    theyForm: "adds a prefix to an existing word",
   },
   {
-    youForm: "use a Triple Letter square",
-    theyForm: "uses a Triple Letter square",
+    youForm: "add a suffix to an existing word",
+    theyForm: "adds a suffix to an existing word",
   },
   {
-    youForm: "use a Double Word square",
-    theyForm: "uses a Double Word square",
+    youForm: "use a TripleLetter square",
+    theyForm: "uses a TripleLetter square",
+  },
+  {
+    youForm: "use a DoubleWord square",
+    theyForm: "uses a DoubleWord square",
   },
   { youForm: "use a 2-point tile", theyForm: "uses a 2-point tile" },
   {
@@ -172,10 +176,18 @@ function randomPick<T>(array: T[]): T {
 // ============ CHALLENGE GENERATION ============
 
 export type Difficulty = "easy" | "medium" | "hard";
+export type Actor =
+  | "you"
+  | "anyone"
+  | "anyOpponent"
+  | "opponent1"
+  | "opponent2"
+  | "opponent3";
 
 export interface Square {
   challenge: string;
   difficulty: Difficulty;
+  actor: Actor;
   marked: boolean;
 }
 
@@ -186,44 +198,58 @@ const DISTRIBUTION: Record<Difficulty, number> = {
   hard: 2,
 };
 
+interface ChallengeResult {
+  challenge: string;
+  actor: Actor;
+}
+
 /**
- * Generate a single challenge string with proper verb conjugation
+ * Generate a single challenge with action text (no actor prefix) and actor type
  */
 function generateChallenge(
   difficulty: Difficulty,
   otherPlayerNames: string[]
-): string {
-  let actor: string;
+): ChallengeResult {
+  let actor: Actor;
   let action: Action;
   let isYou: boolean;
 
   switch (difficulty) {
     case "easy":
-      actor = randomPick(EASY_ACTORS);
+      actor = randomPick(EASY_ACTORS) === "You" ? "you" : "anyone";
       action = randomPick(EASY_ACTIONS);
-      isYou = actor === "You";
+      isYou = actor === "you";
       break;
     case "medium":
-      actor = randomPick(MEDIUM_ACTORS);
+      actor = randomPick(MEDIUM_ACTORS) === "You" ? "you" : "anyOpponent";
       action = randomPick(MEDIUM_ACTIONS);
-      isYou = actor === "You";
+      isYou = actor === "you";
       break;
     case "hard":
-      // Hard challenges target a specific other player
+      // Hard challenges target a specific other player by index
       if (otherPlayerNames.length > 0) {
-        actor = randomPick(otherPlayerNames);
+        const opponentIndex = Math.floor(
+          Math.random() * Math.min(otherPlayerNames.length, 3)
+        );
+        actor = `opponent${opponentIndex + 1}` as Actor;
       } else {
-        // Fallback if somehow no other players (shouldn't happen with 2+ players)
-        actor = "An opponent";
+        // Fallback if somehow no other players
+        actor = "anyOpponent";
       }
       action = randomPick(HARD_ACTIONS);
       isYou = false; // Hard challenges are always about other players
       break;
   }
 
-  // Use correct verb form based on actor
+  // Use correct verb form based on actor - capitalize first letter
   const actionText = isYou ? action.youForm : action.theyForm;
-  return `${actor} ${actionText}`;
+  const capitalizedAction =
+    actionText.charAt(0).toUpperCase() + actionText.slice(1);
+
+  return {
+    challenge: capitalizedAction,
+    actor,
+  };
 }
 
 /**
@@ -239,12 +265,15 @@ function generateBoardChallenges(otherPlayerNames: string[]): Square[] {
     const maxAttempts = 50;
 
     while (attempts < maxAttempts) {
-      const challenge = generateChallenge(difficulty, otherPlayerNames);
-      if (!usedChallenges.has(challenge)) {
-        usedChallenges.add(challenge);
+      const result = generateChallenge(difficulty, otherPlayerNames);
+      // Include actor in uniqueness check to allow same action with different actors
+      const uniqueKey = `${result.actor}:${result.challenge}`;
+      if (!usedChallenges.has(uniqueKey)) {
+        usedChallenges.add(uniqueKey);
         challenges.push({
-          challenge,
+          challenge: result.challenge,
           difficulty,
+          actor: result.actor,
           marked: false,
         });
         return;
@@ -254,10 +283,11 @@ function generateBoardChallenges(otherPlayerNames: string[]): Square[] {
 
     // If we can't find a unique one after max attempts, use it anyway
     // (very unlikely with our action pool sizes)
-    const challenge = generateChallenge(difficulty, otherPlayerNames);
+    const result = generateChallenge(difficulty, otherPlayerNames);
     challenges.push({
-      challenge,
+      challenge: result.challenge,
       difficulty,
+      actor: result.actor,
       marked: false,
     });
   };
