@@ -136,6 +136,10 @@ const config: Config = {
           "50%": { opacity: "0.8" },
           "100%": { transform: "translateY(-100vh) scale(1.5)", opacity: "0" },
         },
+        "pulse-ring": {
+          "0%": { transform: "scale(1)", opacity: "0.8" },
+          "100%": { transform: "scale(2)", opacity: "0" },
+        },
       },
       animation: {
         "mark-bounce": "mark-bounce 300ms ease-out",
@@ -144,6 +148,7 @@ const config: Config = {
         "trophy-bounce": "trophy-bounce 500ms ease-out infinite",
         "fade-in": "fade-in 200ms ease-out",
         "bubble-rise": "bubble-rise 2s ease-out infinite",
+        "pulse-ring": "pulse-ring 2s ease-out infinite",
       },
     },
   },

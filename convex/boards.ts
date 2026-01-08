@@ -2,6 +2,57 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { checkWin } from "./lib/challenges";
 
+// Line definitions for 5x5 bingo board
+const ROWS = [
+  [0, 1, 2, 3, 4],
+  [5, 6, 7, 8, 9],
+  [10, 11, 12, 13, 14],
+  [15, 16, 17, 18, 19],
+  [20, 21, 22, 23, 24],
+];
+const COLS = [
+  [0, 5, 10, 15, 20],
+  [1, 6, 11, 16, 21],
+  [2, 7, 12, 17, 22],
+  [3, 8, 13, 18, 23],
+  [4, 9, 14, 19, 24],
+];
+const DIAGS = [
+  [0, 6, 12, 18, 24], // main diagonal
+  [4, 8, 12, 16, 20], // anti diagonal
+];
+
+// Helper to detect lines with exactly 4 marked squares (close to winning)
+function getCloseLines(squares: { marked: boolean }[]): string[] {
+  const lines: string[] = [];
+
+  ROWS.forEach((row, i) => {
+    if (row.filter((idx) => squares[idx].marked).length === 4) {
+      lines.push(`row-${i}`);
+    }
+  });
+
+  COLS.forEach((col, i) => {
+    if (col.filter((idx) => squares[idx].marked).length === 4) {
+      lines.push(`col-${i}`);
+    }
+  });
+
+  if (DIAGS[0].filter((idx) => squares[idx].marked).length === 4) {
+    lines.push("diag-main");
+  }
+  if (DIAGS[1].filter((idx) => squares[idx].marked).length === 4) {
+    lines.push("diag-anti");
+  }
+
+  return lines;
+}
+
+// Generate unique event ID
+function generateEventId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export const getByPlayer = query({
   args: { playerId: v.id("players") },
   handler: async (ctx, args) => {
@@ -65,6 +116,34 @@ export const markSquare = mutation({
     // Update the board
     await ctx.db.patch(args.boardId, { squares });
 
+    // Collect new events to add
+    type GameEvent =
+      | {
+          id: string;
+          type: "drinking";
+          playerName: string;
+          drinkType: "shot" | "doubleShot";
+          sentAt: number;
+          seenBy: string[];
+        }
+      | {
+          id: string;
+          type: "close";
+          playerName: string;
+          lineType: string;
+          sentAt: number;
+          seenBy: string[];
+        }
+      | {
+          id: string;
+          type: "won";
+          playerName: string;
+          sentAt: number;
+          seenBy: string[];
+        };
+
+    const newEvents: GameEvent[] = [];
+
     // Check for drinking event (only when marking, not unmarking)
     if (
       isNowMarked &&
@@ -72,28 +151,63 @@ export const markSquare = mutation({
       square.drinkingType &&
       square.drinkingType !== "none"
     ) {
-      // Add drinking event to the events array
-      const newEvent = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      newEvents.push({
+        id: generateEventId(),
+        type: "drinking",
         playerName: player.name,
         drinkType: square.drinkingType as "shot" | "doubleShot",
         sentAt: Date.now(),
-        seenBy: [] as string[],
-      };
-
-      await ctx.db.patch(game._id, {
-        drinkingEvents: [...(game.drinkingEvents ?? []), newEvent],
+        seenBy: [],
       });
+    }
+
+    // Check for close events (4/5 lines) - only when marking
+    if (isNowMarked) {
+      const closeLines = getCloseLines(squares);
+      const existingCloseEvents = (game.gameEvents ?? []).filter(
+        (e) => e.type === "close" && e.playerName === player.name
+      );
+      const existingLineTypes = new Set(
+        existingCloseEvents.map((e) => (e as { lineType: string }).lineType)
+      );
+
+      for (const lineType of closeLines) {
+        if (!existingLineTypes.has(lineType)) {
+          newEvents.push({
+            id: generateEventId(),
+            type: "close",
+            playerName: player.name,
+            lineType,
+            sentAt: Date.now(),
+            seenBy: [],
+          });
+        }
+      }
     }
 
     // Check for win
     const won = checkWin(squares);
 
     if (won) {
-      // Set the winner
+      // Add won event
+      newEvents.push({
+        id: generateEventId(),
+        type: "won",
+        playerName: player.name,
+        sentAt: Date.now(),
+        seenBy: [],
+      });
+
+      // Set the winner and update events
       await ctx.db.patch(game._id, {
         status: "finished",
         winnerId: board.playerId,
+        gameEvents: [...(game.gameEvents ?? []), ...newEvents],
+      });
+    } else if (newEvents.length > 0) {
+      // Update events without changing game status
+      await ctx.db.patch(game._id, {
+        gameEvents: [...(game.gameEvents ?? []), ...newEvents],
       });
     }
 

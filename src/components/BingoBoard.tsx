@@ -10,6 +10,8 @@ import {
   Actor,
   actorEmojis,
 } from "@/lib/gameUtils";
+import { useState } from "react";
+import { HelpCircle, X } from "lucide-react";
 
 interface BingoBoardProps {
   board: Doc<"boards"> | null | undefined;
@@ -29,6 +31,7 @@ export function BingoBoard({
   currentPlayerId,
 }: BingoBoardProps) {
   const markSquare = useMutation(api.boards.markSquare);
+  const [showLegend, setShowLegend] = useState(false);
 
   const handleSquareClick = async (index: number) => {
     if (!board || gameStatus !== "playing") return;
@@ -59,6 +62,69 @@ export function BingoBoard({
 
   return (
     <main className="min-h-screen flex flex-col p-2 sm:p-4 safe-area-top safe-area-bottom">
+      {/* Legend Modal */}
+      {showLegend && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-xl p-4 max-w-xs w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-heading font-bold text-primary">Legend</h3>
+              <button
+                onClick={() => setShowLegend(false)}
+                className="p-1 hover:bg-muted rounded-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Who performs the challenge */}
+            <div className="mb-3">
+              <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
+                Who performs
+              </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-6 text-center">{actorEmojis.you}</span>
+                  <span>You must do it</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-6 text-center">{actorEmojis.anyone}</span>
+                  <span>Anyone can do it</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-6 text-center">{actorEmojis.anyOpponent}</span>
+                  <span>Any opponent does it</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-6 text-center">1️⃣2️⃣3️⃣</span>
+                  <span>Specific opponent does it</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Difficulty colors */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
+                Difficulty
+              </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-4 h-4 rounded bg-emerald-600 border border-emerald-400"></span>
+                  <span>Easy</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-4 h-4 rounded bg-amber-600 border border-amber-400"></span>
+                  <span>Medium</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-4 h-4 rounded bg-red-600 border border-red-400"></span>
+                  <span>Hard</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
@@ -69,9 +135,18 @@ export function BingoBoard({
             {markedCount}/25 marked
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-muted-foreground">Best line: {bestProgress}/5</p>
-          <ProgressDots progress={bestProgress} size="md" />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowLegend(true)}
+            className="p-1.5 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground"
+            title="Show legend"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">Best line: {bestProgress}/5</p>
+            <ProgressDots progress={bestProgress} size="md" />
+          </div>
         </div>
       </div>
 

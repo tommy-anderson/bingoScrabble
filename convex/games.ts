@@ -141,7 +141,7 @@ export const setWinner = mutation({
   },
 });
 
-export const markDrinkingEventSeen = mutation({
+export const markEventSeen = mutation({
   args: {
     gameId: v.id("games"),
     eventId: v.string(),
@@ -149,14 +149,14 @@ export const markDrinkingEventSeen = mutation({
   },
   handler: async (ctx, args) => {
     const game = await ctx.db.get(args.gameId);
-    if (!game || !game.drinkingEvents) return;
+    if (!game || !game.gameEvents) return;
 
-    const updatedEvents = game.drinkingEvents.map((event) =>
+    const updatedEvents = game.gameEvents.map((event) =>
       event.id === args.eventId && !event.seenBy.includes(args.playerId)
         ? { ...event, seenBy: [...event.seenBy, args.playerId] }
         : event
     );
 
-    await ctx.db.patch(args.gameId, { drinkingEvents: updatedEvents });
+    await ctx.db.patch(args.gameId, { gameEvents: updatedEvents });
   },
 });

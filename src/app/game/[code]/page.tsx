@@ -10,6 +10,7 @@ import { GameLobby } from "@/components/GameLobby";
 import { BingoBoard } from "@/components/BingoBoard";
 import { WinnerModal } from "@/components/WinnerModal";
 import { DrinkingModal } from "@/components/DrinkingModal";
+import { CloseModal } from "@/components/CloseModal";
 import { JoinGameForm } from "@/components/JoinGameForm";
 import { Loader2 } from "lucide-react";
 
@@ -22,7 +23,7 @@ export default function GamePage() {
   const [currentPlayerId, setCurrentPlayerId] = useState<Id<"players"> | null>(null);
 
   // Mutations
-  const markDrinkingEventSeen = useMutation(api.games.markDrinkingEventSeen);
+  const markEventSeen = useMutation(api.games.markEventSeen);
 
   // Queries
   const game = useQuery(api.games.getByCode, { code });
@@ -54,27 +55,38 @@ export default function GamePage() {
     }
   }, [session, code, players, sessionLoading, game]);
 
-  // Find unseen drinking events for current player (oldest first)
-  const unseenDrinkingEvent = useMemo(() => {
-    if (!game?.drinkingEvents || !currentPlayerId) return null;
+  // Find first unseen event for current player (oldest first)
+  const unseenEvent = useMemo(() => {
+    if (!game?.gameEvents || !currentPlayerId) return null;
 
     const now = Date.now();
-    return game.drinkingEvents.find(
+    return game.gameEvents.find(
       (event) =>
         now > event.sentAt && !event.seenBy.includes(currentPlayerId)
     ) ?? null;
-  }, [game?.drinkingEvents, currentPlayerId]);
+  }, [game?.gameEvents, currentPlayerId]);
 
-  // Handle dismissing a drinking event
-  const handleDismissDrinkingEvent = async () => {
-    if (unseenDrinkingEvent && currentPlayerId && game) {
-      await markDrinkingEventSeen({
+  // Handle dismissing an event
+  const handleDismissEvent = async () => {
+    if (unseenEvent && currentPlayerId && game) {
+      await markEventSeen({
         gameId: game._id,
-        eventId: unseenDrinkingEvent.id,
+        eventId: unseenEvent.id,
         playerId: currentPlayerId,
       });
     }
   };
+
+  // Auto-dismiss "won" events since WinnerModal handles the display
+  useEffect(() => {
+    if (unseenEvent?.type === "won" && currentPlayerId && game) {
+      markEventSeen({
+        gameId: game._id,
+        eventId: unseenEvent.id,
+        playerId: currentPlayerId,
+      });
+    }
+  }, [unseenEvent, currentPlayerId, game, markEventSeen]);
 
   // Handle successful join
   const handleJoined = (playerId: string, playerName: string) => {
@@ -197,6 +209,32 @@ export default function GamePage() {
     );
   }
 
+  // Helper to render the appropriate modal based on event type
+  const renderEventModal = () => {
+    // Skip if no event or if it's a "won" event (handled by WinnerModal + auto-dismiss useEffect)
+    if (!unseenEvent || unseenEvent.type === "won") return null;
+
+    switch (unseenEvent.type) {
+      case "drinking":
+        return (
+          <DrinkingModal
+            playerName={unseenEvent.playerName}
+            drinkType={unseenEvent.drinkType}
+            onDismiss={handleDismissEvent}
+          />
+        );
+      case "close":
+        return (
+          <CloseModal
+            playerName={unseenEvent.playerName}
+            onDismiss={handleDismissEvent}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   // Game in progress - show board
   if (game.status === "playing") {
     return (
@@ -209,13 +247,7 @@ export default function GamePage() {
           gameStatus={game.status}
           currentPlayerId={currentPlayerId}
         />
-        {unseenDrinkingEvent && (
-          <DrinkingModal
-            playerName={unseenDrinkingEvent.playerName}
-            drinkType={unseenDrinkingEvent.drinkType}
-            onDismiss={handleDismissDrinkingEvent}
-          />
-        )}
+        {renderEventModal()}
       </>
     );
   }

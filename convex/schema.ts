@@ -13,15 +13,33 @@ export default defineSchema({
     winnerId: v.optional(v.id("players")),
     createdAt: v.number(),
     drinkingMode: v.optional(v.boolean()),
-    drinkingEvents: v.optional(
+    gameEvents: v.optional(
       v.array(
-        v.object({
-          id: v.string(),
-          playerName: v.string(),
-          drinkType: v.union(v.literal("shot"), v.literal("doubleShot")),
-          sentAt: v.number(),
-          seenBy: v.array(v.string()),
-        })
+        v.union(
+          v.object({
+            id: v.string(),
+            type: v.literal("drinking"),
+            playerName: v.string(),
+            drinkType: v.union(v.literal("shot"), v.literal("doubleShot")),
+            sentAt: v.number(),
+            seenBy: v.array(v.string()),
+          }),
+          v.object({
+            id: v.string(),
+            type: v.literal("close"),
+            playerName: v.string(),
+            lineType: v.string(),
+            sentAt: v.number(),
+            seenBy: v.array(v.string()),
+          }),
+          v.object({
+            id: v.string(),
+            type: v.literal("won"),
+            playerName: v.string(),
+            sentAt: v.number(),
+            seenBy: v.array(v.string()),
+          })
+        )
       )
     ),
   }).index("by_code", ["code"]),
