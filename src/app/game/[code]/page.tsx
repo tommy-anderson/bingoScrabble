@@ -54,6 +54,28 @@ export default function GamePage() {
     }
   }, [session, code, players, sessionLoading, game]);
 
+  // Find unseen drinking events for current player (oldest first)
+  const unseenDrinkingEvent = useMemo(() => {
+    if (!game?.drinkingEvents || !currentPlayerId) return null;
+
+    const now = Date.now();
+    return game.drinkingEvents.find(
+      (event) =>
+        now > event.sentAt && !event.seenBy.includes(currentPlayerId)
+    ) ?? null;
+  }, [game?.drinkingEvents, currentPlayerId]);
+
+  // Handle dismissing a drinking event
+  const handleDismissDrinkingEvent = async () => {
+    if (unseenDrinkingEvent && currentPlayerId && game) {
+      await markDrinkingEventSeen({
+        gameId: game._id,
+        eventId: unseenDrinkingEvent.id,
+        playerId: currentPlayerId,
+      });
+    }
+  };
+
   // Handle successful join
   const handleJoined = (playerId: string, playerName: string) => {
     const sessionId = getSessionId();
@@ -174,28 +196,6 @@ export default function GamePage() {
       </>
     );
   }
-
-  // Find unseen drinking events for current player (oldest first)
-  const unseenDrinkingEvent = useMemo(() => {
-    if (!game?.drinkingEvents || !currentPlayerId) return null;
-
-    const now = Date.now();
-    return game.drinkingEvents.find(
-      (event) =>
-        now > event.sentAt && !event.seenBy.includes(currentPlayerId)
-    ) ?? null;
-  }, [game?.drinkingEvents, currentPlayerId]);
-
-  // Handle dismissing a drinking event
-  const handleDismissDrinkingEvent = async () => {
-    if (unseenDrinkingEvent && currentPlayerId && game) {
-      await markDrinkingEventSeen({
-        gameId: game._id,
-        eventId: unseenDrinkingEvent.id,
-        playerId: currentPlayerId,
-      });
-    }
-  };
 
   // Game in progress - show board
   if (game.status === "playing") {
