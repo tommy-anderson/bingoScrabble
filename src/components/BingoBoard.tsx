@@ -6,6 +6,35 @@ import { Doc, Id } from "../../convex/_generated/dataModel";
 import { BingoSquare } from "./BingoSquare";
 import { cn } from "@/lib/utils";
 
+// All possible winning lines (same as server-side)
+const WINNING_LINES = [
+  // Rows
+  [0, 1, 2, 3, 4],
+  [5, 6, 7, 8, 9],
+  [10, 11, 12, 13, 14],
+  [15, 16, 17, 18, 19],
+  [20, 21, 22, 23, 24],
+  // Columns
+  [0, 5, 10, 15, 20],
+  [1, 6, 11, 16, 21],
+  [2, 7, 12, 17, 22],
+  [3, 8, 13, 18, 23],
+  [4, 9, 14, 19, 24],
+  // Diagonals
+  [0, 6, 12, 18, 24],
+  [4, 8, 12, 16, 20],
+];
+
+// Calculate the best progress towards any bingo line
+function getBestLineProgress(squares: { marked: boolean }[]): number {
+  let maxMarked = 0;
+  for (const line of WINNING_LINES) {
+    const markedInLine = line.filter((idx) => squares[idx]?.marked).length;
+    maxMarked = Math.max(maxMarked, markedInLine);
+  }
+  return maxMarked;
+}
+
 interface BingoBoardProps {
   board: Doc<"boards"> | null | undefined;
   player: Doc<"players"> | undefined;
@@ -45,16 +74,17 @@ export function BingoBoard({
 
   // Calculate progress for current player
   const markedCount = board?.squares.filter((s) => s.marked).length ?? 0;
+  const bestProgress = board ? getBestLineProgress(board.squares) : 0;
 
-  // Get other players' progress
+  // Get other players' progress (best line progress, not total marked)
   const otherPlayersProgress = players
     .filter((p) => p._id !== currentPlayerId)
     .map((p) => {
       const playerBoard = allBoards.find((b) => b.playerId === p._id);
-      const marked = playerBoard?.squares.filter((s) => s.marked).length ?? 0;
+      const progress = playerBoard ? getBestLineProgress(playerBoard.squares) : 0;
       return {
         name: p.name,
-        marked,
+        progress,
       };
     });
 
@@ -79,14 +109,14 @@ export function BingoBoard({
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">Progress to Bingo</p>
+          <p className="text-xs text-muted-foreground">Best line: {bestProgress}/5</p>
           <div className="flex gap-1">
             {Array.from({ length: 5 }, (_, i) => (
               <div
                 key={i}
                 className={cn(
                   "w-2 h-2 rounded-full",
-                  i < Math.floor(markedCount / 5)
+                  i < bestProgress
                     ? "bg-primary"
                     : "bg-muted"
                 )}
@@ -125,7 +155,7 @@ export function BingoBoard({
                     key={i}
                     className={cn(
                       "w-2 h-2 rounded-full",
-                      i < Math.floor(p.marked / 5)
+                      i < p.progress
                         ? "bg-accent"
                         : "bg-muted"
                     )}
