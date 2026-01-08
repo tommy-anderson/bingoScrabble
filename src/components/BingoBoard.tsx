@@ -81,23 +81,31 @@ export function BingoBoard({
               <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
                 Who performs
               </p>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="w-6 text-center">{actorEmojis.you}</span>
+                  <span className="w-6 text-center shrink-0">{actorEmojis.you}</span>
                   <span>You must do it</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="w-6 text-center">{actorEmojis.anyone}</span>
-                  <span>Anyone can do it</span>
+                  <span className="w-6 text-center shrink-0">{actorEmojis.anyone}</span>
+                  <span>Anyone can do it - including you</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="w-6 text-center">{actorEmojis.anyOpponent}</span>
+                  <span className="w-6 text-center shrink-0">{actorEmojis.anyOpponent}</span>
                   <span>Any opponent does it</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-6 text-center">1️⃣2️⃣3️⃣</span>
-                  <span>Specific opponent does it</span>
-                </div>
+                {/* Show specific opponents with their names */}
+                {otherPlayersProgress.map((p, index) => (
+                  <div key={p.name} className="flex items-center gap-2 text-sm">
+                    <span className="w-6 text-center shrink-0">
+                      {actorEmojis[`opponent${index + 1}` as Actor]}
+                    </span>
+                    <span>
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-muted-foreground"> must do it</span>
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 

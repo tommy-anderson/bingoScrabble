@@ -67,7 +67,7 @@ export function BingoSquare({
       {/* Actor indicator emoji */}
       <span
         className={cn(
-          "absolute bottom-0 right-0.5 text-xs leading-none",
+          "absolute bottom-0 right-0.5 text-xl leading-none",
           marked && "opacity-60"
         )}
       >
