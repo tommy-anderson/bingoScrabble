@@ -1,0 +1,114 @@
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background - Warm Dark */
+    --background: 30 15% 10%;
+    --foreground: 40 20% 90%;
+
+    /* Card - Slightly lighter */
+    --card: 30 15% 14%;
+    --card-foreground: 40 20% 90%;
+
+    /* Popover */
+    --popover: 30 15% 14%;
+    --popover-foreground: 40 20% 90%;
+
+    /* Primary - Rich Amber (Scrabble tile inspired) */
+    --primary: 36 100% 50%;
+    --primary-foreground: 0 0% 10%;
+
+    /* Secondary - Deep Teal */
+    --secondary: 180 50% 25%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted - Soft brown */
+    --muted: 30 10% 25%;
+    --muted-foreground: 40 10% 60%;
+
+    /* Accent - Warm Gold */
+    --accent: 45 90% 55%;
+    --accent-foreground: 0 0% 10%;
+
+    /* Destructive - Soft Red */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success - Warm Green */
+    --success: 142 50% 40%;
+    --success-foreground: 0 0% 100%;
+
+    /* Border */
+    --border: 30 15% 20%;
+    --input: 30 15% 20%;
+    --ring: 36 100% 50%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .challenge-easy {
+    @apply bg-emerald-900/50 border-emerald-700;
+  }
+
+  .challenge-medium {
+    @apply bg-amber-900/50 border-amber-700;
+  }
+
+  .challenge-hard {
+    @apply bg-red-900/50 border-red-700;
+  }
+}
+
+/* Prevent pull-to-refresh on mobile */
+html,
+body {
+  overscroll-behavior: none;
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
